@@ -2,10 +2,8 @@
 // src/pages/index.astro
 import trendingData from '../data/trending.json';
 
-// Sort posts by date (newest first)
-const sortedPosts = [...trendingData].sort((a, b) => 
-  new Date(b.date) - new Date(a.date)
-);
+// Get only the latest/most recent post
+const latestPost = trendingData.length > 0 ? trendingData[0] : null;
 ---
 
 <!DOCTYPE html>
@@ -13,7 +11,7 @@ const sortedPosts = [...trendingData].sort((a, b) =>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Blog</title>
+    <title>Daily Story</title>
     <style>
         * {
             margin: 0;
@@ -22,186 +20,211 @@ const sortedPosts = [...trendingData].sort((a, b) =>
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: 'Georgia', 'Times New Roman', Times, serif;
+            background: #faf9f8;
+            color: #1a1a1a;
+            line-height: 1.6;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 720px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1.5rem;
         }
         
-        /* Header */
-        .header {
+        /* Header - Clean & Simple */
+        .site-header {
             text-align: center;
+            padding: 2rem 0 1rem 0;
+            border-bottom: 1px solid #eae6df;
             margin-bottom: 3rem;
         }
         
-        .header h1 {
-            font-size: 3rem;
-            color: white;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        .site-title {
+            font-size: 2rem;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            color: #2c3e50;
         }
         
-        .header p {
-            color: rgba(255,255,255,0.9);
-            font-size: 1.1rem;
-        }
-        
-        .update-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-top: 1rem;
-        }
-        
-        /* Blog Card */
-        .blog-card {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .blog-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        
-        .blog-title {
-            font-size: 1.8rem;
-            color: #333;
-            margin-bottom: 0.75rem;
-            line-height: 1.3;
-        }
-        
-        .blog-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .blog-date {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        .blog-content {
-            color: #555;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
-        }
-        
-        .read-more {
-            display: inline-block;
-            color: #667eea;
+        .site-title a {
             text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
+            color: #2c3e50;
         }
         
-        .read-more:hover {
-            color: #764ba2;
+        .site-description {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .date-badge {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .date-badge span {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: #eae6df;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            color: #5e5a55;
+        }
+        
+        /* Story Content */
+        .story-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: #1a1a1a;
+            text-align: left;
+        }
+        
+        .story-meta {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.85rem;
+            color: #8e8e8e;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eae6df;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .story-content {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        
+        .story-content p {
+            margin-bottom: 1.5rem;
         }
         
         /* Empty State */
         .empty-state {
-            background: white;
-            border-radius: 16px;
-            padding: 4rem 2rem;
             text-align: center;
-            color: #666;
+            padding: 4rem 2rem;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #eae6df;
         }
         
         .empty-state h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
             margin-bottom: 1rem;
-            color: #333;
+            color: #2c3e50;
+        }
+        
+        .empty-state p {
+            color: #7f8c8d;
         }
         
         /* Footer */
-        .footer {
+        .site-footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
             text-align: center;
-            margin-top: 3rem;
-            color: rgba(255,255,255,0.8);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+            color: #b0a8a0;
+            border-top: 1px solid #eae6df;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
+        /* Responsive */
         @media (max-width: 600px) {
             .container {
                 padding: 1rem;
             }
             
-            .blog-card {
-                padding: 1.5rem;
-            }
-            
-            .blog-title {
-                font-size: 1.4rem;
-            }
-            
-            .header h1 {
+            .story-title {
                 font-size: 2rem;
+            }
+            
+            .story-content {
+                font-size: 1rem;
+            }
+            
+            .site-title {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Simple animations */
+        .story-content {
+            animation: fadeIn 0.6s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📝 My Blog</h1>
-            <p>Thoughts, stories, and ideas</p>
-            <div class="update-badge">
-                🕐 Last updated: <span id="update-time"></span>
-            </div>
+        <header class="site-header">
+            <h1 class="site-title">
+                <a href="/">Daily Story</a>
+            </h1>
+            <div class="site-description">One story, every day</div>
+        </header>
+        
+        <div class="date-badge">
+            <span>
+                {
+                    latestPost && latestPost.date 
+                        ? new Date(latestPost.date).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })
+                        : new Date().toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })
+                }
+            </span>
         </div>
         
         {
-            sortedPosts.length === 0 ? (
+            !latestPost ? (
                 <div class="empty-state">
-                    <h2>✨ No posts yet</h2>
-                    <p>Check back soon for new content!</p>
+                    <h2>✨ No story yet</h2>
+                    <p>Check back tomorrow for today's story.</p>
                 </div>
             ) : (
-                sortedPosts.map((post) => (
-                    <article class="blog-card">
-                        <h2 class="blog-title">{post.title}</h2>
-                        <div class="blog-meta">
-                            <span class="blog-date">
-                                📅 {post.date || new Date().toISOString().split('T')[0]}
-                            </span>
-                            {post.score && <span>⭐ {post.score}</span>}
-                        </div>
-                        <div class="blog-content">
-                            {post.content}
-                        </div>
-                        {post.url && (
-                            <a href={post.url} class="read-more" target="_blank">
-                                Read full article →
-                            </a>
-                        )}
-                    </article>
-                ))
+                <article class="story-content">
+                    <h1 class="story-title">{latestPost.title}</h1>
+                    <div class="story-meta">
+                        <span>📖 Today's story</span>
+                        <span>⭐ Featured</span>
+                    </div>
+                    <div class="story-content">
+                        <p>{latestPost.content}</p>
+                    </div>
+                </article>
             )
         }
         
-        <div class="footer">
-            <p>© 2026 My Blog. All rights reserved.</p>
-        </div>
+        <footer class="site-footer">
+            <p>A daily story • Updated every day</p>
+        </footer>
     </div>
-    
-    <script>
-        document.getElementById('update-time').innerText = new Date().toLocaleString();
-    </script>
 </body>
 </html>
