@@ -1,0 +1,73 @@
+---
+// src/pages/index.astro
+import trendingData from '../data/trending.json';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Blog</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eaecef;
+            padding-bottom: 0.5rem;
+        }
+        .post {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f6f8fa;
+            border-radius: 8px;
+        }
+        .post h2 {
+            margin-top: 0;
+            color: #0366d6;
+        }
+        .date {
+            color: #586069;
+            font-size: 0.9rem;
+        }
+        .score {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Today's Trending Topics</h1>
+    <p>Last updated: <span id="update-time"></span></p>
+    
+    {
+        trendingData.length === 0 ? (
+            <p>No content yet. Automation script will populate this soon.</p>
+        ) : (
+            trendingData.map((post) => (
+                <div class="post">
+                    <h2>{post.title}</h2>
+                    {post.score && <span class="score">Score: {post.score}</span>}
+                    <p>{post.content || "Click the link to read more."}</p>
+                    {post.url && <a href={post.url} target="_blank">Read more →</a>}
+                    <div class="date">{post.date}</div>
+                </div>
+            ))
+        )
+    }
+    
+    <script>
+        document.getElementById('update-time').innerText = new Date().toLocaleString();
+    </script>
+</body>
+</html>
