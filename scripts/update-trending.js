@@ -9,145 +9,70 @@ const __dirname = dirname(__filename);
 const draftPath = join(__dirname, '../content/draft.txt');
 const dataPath = join(__dirname, '../src/data/trending.json');
 
-// Function to fetch AI tech news from free APIs
-async function fetchAITechNews() {
-    try {
-        console.log('🤖 Fetching latest AI tech news...');
-        
-        // Option 1: HackerNews AI-related stories (free, no API key)
-        const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const storyIds = await response.json();
-        
-        // Fetch top 20 stories and filter AI-related ones
-        const stories = await Promise.all(
-            storyIds.slice(0, 30).map(async (id) => {
-                const storyRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
-                return storyRes.json();
-            })
-        );
-        
-        // Filter AI/tech related stories
-        const aiKeywords = ['ai', 'artificial', 'intelligence', 'machine learning', 'chatgpt', 'gpt', 'llm', 'neural', 'deep learning', 'openai', 'anthropic', 'claude', 'gemini', 'copilot', 'llama', 'mistral', 'nvidia', 'gpu', 'hugging face', 'stability', 'midjourney'];
-        
-        const aiStories = stories.filter(story => 
-            story && story.title && 
-            aiKeywords.some(keyword => story.title.toLowerCase().includes(keyword))
-        );
-        
-        if (aiStories.length === 0) {
-            // Fallback: get top stories if no AI-specific ones
-            return stories.slice(0, 5).map(story => ({
-                title: story.title,
-                url: story.url || `https://news.ycombinator.com/item?id=${story.id}`,
-                source: 'HackerNews',
-                score: story.score
-            }));
-        }
-        
-        return aiStories.slice(0, 5).map(story => ({
-            title: story.title,
-            url: story.url || `https://news.ycombinator.com/item?id=${story.id}`,
-            source: 'HackerNews',
-            score: story.score
-        }));
-        
-    } catch (error) {
-        console.error('❌ Error fetching news:', error.message);
-        return [];
-    }
-}
-
-// Function to generate formatted content from a news item
-function generateFormattedContent(newsItem) {
-    const topics = [
-        `• What happened: ${newsItem.title}`,
-        `• Why it matters: This development signals a major shift in how ${getRandomAISector()} technology is evolving.`,
-        `• Key takeaway: ${getRandomTakeaway()}`,
-        `• What's next: Industry experts predict ${getRandomPrediction()}`,
-        `• Read more: ${newsItem.url || 'Full coverage available'}`
-    ];
-    
-    return topics.join('\n\n');
-}
-
-function getRandomAISector() {
-    const sectors = ['AI', 'machine learning', 'generative AI', 'enterprise AI', 'AI infrastructure', 'autonomous systems'];
-    return sectors[Math.floor(Math.random() * sectors.length)];
-}
-
-function getRandomTakeaway() {
-    const takeaways = [
-        'Innovation is accelerating faster than anticipated.',
-        'Competition in the AI space is intensifying dramatically.',
-        'Enterprise adoption is reaching critical mass.',
-        'Regulatory scrutiny is increasing alongside capabilities.',
-        'Open-source models are closing the gap with closed alternatives.'
-    ];
-    return takeaways[Math.floor(Math.random() * takeaways.length)];
-}
-
-function getRandomPrediction() {
-    const predictions = [
-        'we\'ll see similar announcements from competitors within weeks.',
-        'this technology will become widely available by Q3 2026.',
-        'enterprise adoption will surge in the coming months.',
-        'regulatory frameworks will evolve to address these new capabilities.',
-        'consumer applications will emerge rapidly following this development.'
-    ];
-    return predictions[Math.floor(Math.random() * predictions.length)];
-}
-
 // Main function
 async function main() {
-    console.log('🚀 Starting AI tech news generation...');
+    console.log('📝 Reading draft from content/draft.txt...');
     
-    // Check if manual draft exists (priority)
-    if (fs.existsSync(draftPath)) {
-        const draftContent = fs.readFileSync(draftPath, 'utf-8').trim();
-        if (draftContent) {
-            console.log('📝 Manual draft found, using it instead...');
-            
-            const lines = draftContent.split('\n');
-            const newPost = {
-                title: lines.find(l => l.startsWith('Title:'))?.replace('Title:', '').trim() || 'Untitled',
-                date: lines.find(l => l.startsWith('Date:'))?.replace('Date:', '').trim() || new Date().toISOString().split('T')[0],
-                content: lines.filter(l => !l.startsWith('Title:') && !l.startsWith('Date:')).join('\n').trim(),
-                url: null,
-                source: 'Manual'
-            };
-            
-            let existingPosts = [];
-            if (fs.existsSync(dataPath)) {
-                existingPosts = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-            }
-            
-            const updatedPosts = [newPost, ...existingPosts.slice(0, 9)];
-            fs.writeFileSync(dataPath, JSON.stringify(updatedPosts, null, 2));
-            console.log(`✅ Published manual story: "${newPost.title}"`);
-            fs.writeFileSync(draftPath, '');
-            return;
-        }
-    }
-    
-    // Fetch AI news
-    const newsItems = await fetchAITechNews();
-    
-    if (newsItems.length === 0) {
-        console.log('⚠️ No news fetched. Keeping existing data.');
+    // Check if draft exists
+    if (!fs.existsSync(draftPath)) {
+        console.log('❌ No draft found at content/draft.txt');
+        console.log('');
+        console.log('💡 CREATE YOUR DRAFT with this format:');
+        console.log('   Title: Your Article Title Here');
+        console.log('   Date: 2026-03-26');
+        console.log('   Content: Your article content here.');
+        console.log('');
+        console.log('   For better formatting, use bullet points:');
+        console.log('   • Point one');
+        console.log('   • Point two');
+        console.log('   • Point three');
         process.exit(1);
     }
     
-    // Create a formatted blog post
-    const topNews = newsItems[0];
-    const formattedContent = generateFormattedContent(topNews);
+    // Read draft file
+    const draftContent = fs.readFileSync(draftPath, 'utf-8').trim();
     
+    if (!draftContent) {
+        console.log('❌ Draft file is empty. Add content first.');
+        process.exit(1);
+    }
+    
+    // Parse the draft
+    const lines = draftContent.split('\n');
+    let title = '';
+    let date = new Date().toISOString().split('T')[0];
+    let contentLines = [];
+    
+    for (const line of lines) {
+        if (line.startsWith('Title:')) {
+            title = line.replace('Title:', '').trim();
+        } else if (line.startsWith('Date:')) {
+            date = line.replace('Date:', '').trim();
+        } else {
+            contentLines.push(line);
+        }
+    }
+    
+    if (!title) {
+        console.log('❌ Missing Title: field in your draft');
+        console.log('   Add: Title: Your Article Title');
+        process.exit(1);
+    }
+    
+    const content = contentLines.join('\n').trim();
+    
+    if (!content) {
+        console.log('❌ No content found in draft');
+        process.exit(1);
+    }
+    
+    // Create new post object
     const newPost = {
-        title: topNews.title,
-        date: new Date().toISOString().split('T')[0],
-        content: formattedContent,
-        url: topNews.url,
-        source: topNews.source,
-        score: topNews.score
+        title: title,
+        date: date,
+        content: content,
+        url: null,
+        source: 'Manual'
     };
     
     // Read existing posts
@@ -156,14 +81,23 @@ async function main() {
         existingPosts = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
     }
     
-    // Add new post at top, keep last 10 for archive
-    const updatedPosts = [newPost, ...existingPosts.slice(0, 9)];
+    // Add new post at top, keep last 20 for archive
+    const updatedPosts = [newPost, ...existingPosts.slice(0, 19)];
     
     // Save to JSON
     fs.writeFileSync(dataPath, JSON.stringify(updatedPosts, null, 2));
     
-    console.log(`✅ Published: "${newPost.title}"`);
-    console.log(`📊 Source: ${topNews.source} | Score: ${topNews.score || 'N/A'}`);
+    console.log('');
+    console.log(`✅ PUBLISHED: "${title}"`);
+    console.log(`📅 Date: ${date}`);
+    console.log(`📝 Content length: ${content.length} characters`);
+    console.log('');
+    console.log('📊 Archive now has', updatedPosts.length, 'stories');
+    
+    // Clear the draft file
+    fs.writeFileSync(draftPath, '');
+    console.log('');
+    console.log('🗑️  Draft cleared. Ready for next story.');
 }
 
 main();

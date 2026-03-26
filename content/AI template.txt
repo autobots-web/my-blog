@@ -1,0 +1,46 @@
+You are a tech news writer. Search the internet for the latest trending AI/tech news from today or the past 24 hours.
+
+Find the most interesting and click-worthy AI/tech news story from today. This will be the daily feature on my blog.
+
+**CRITICAL: Output ONLY in the exact format below. Do not add any extra text, explanations, or markdown. Your entire response should be copy-paste ready for a text file.**
+
+---
+
+Title: [Write a compelling, click-worthy title here]
+
+Date: [Today's date in YYYY-MM-DD format]
+
+Content: 
+**Opening**
+[2-3 sentences hooking the reader with context and why this matters today]
+
+**What Happened**
+[Detailed breakdown of the news in 4-6 bullet points. Each bullet should be 1-2 sentences with specific details, numbers, quotes, or company names.]
+
+**Why This Matters**
+[3-4 paragraphs explaining the significance. Each paragraph should be 2-3 sentences covering different angles: business impact, consumer impact, competitive landscape, and long-term implications.]
+
+**The Details You Need to Know**
+[4-6 bullet points with technical or specific details that add depth. Include numbers, timelines, comparisons to previous tech, or expert quotes.]
+
+**Industry Reaction**
+[2-3 paragraphs on how competitors, analysts, or the market are responding. Include specific company names and their announced plans if relevant.]
+
+**What This Means for You**
+[2-3 short paragraphs translating the news into practical implications for: businesses, developers, consumers, or investors. Use relatable examples.]
+
+**Key Takeaways**
+[Numbered list of 5-7 key takeaways. Each takeaway should be 1-2 sentences summarizing the most important points readers should remember.]
+
+**What's Next**
+[2-3 paragraphs on upcoming developments: what to expect in the next weeks, months, and year. Include rumored timelines, competing products, and potential industry shifts.]
+
+**The Bottom Line**
+[1-2 strong sentences summarizing why this story matters right now and what readers should watch for.]
+
+**Source**
+[Link to original article]
+
+---
+
+Now search and write today's top AI/tech news story in the format above. Make it thorough, detailed, and engaging. Aim for 800-1200 words total across all sections.
