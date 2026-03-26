@@ -16,6 +16,9 @@ const previousStories = trendingData.slice(1, 6);
     <meta name="description" content="Daily AI tech news and insights">
     <title>{story ? story.title : 'AI Tech Daily'} | AI Tech Daily</title>
     <style>
+        /* Import Google Font - MUST be at the very top */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -28,9 +31,6 @@ const previousStories = trendingData.slice(1, 6);
             color: #111827;
             line-height: 1.5;
         }
-        
-        /* Import Google Font */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
         /* Top Navigation */
         .top-nav {
@@ -161,7 +161,6 @@ const previousStories = trendingData.slice(1, 6);
             padding: 1rem;
             border-radius: 12px;
             border-left: 4px solid #4f46e5;
-            counter-increment: step-counter;
         }
         
         .step-list li strong {
@@ -344,7 +343,7 @@ const previousStories = trendingData.slice(1, 6);
                     <div class="ad-box">
                         <div class="ad-label">Sponsored</div>
                         <div class="ad-placeholder">
-                            📢 Your Ad Here<br>
+                            📢 Your Ad Here<br />
                             <small>300x250 or responsive</small>
                         </div>
                     </div>
@@ -358,38 +357,40 @@ const previousStories = trendingData.slice(1, 6);
                             {story.score && <span>⭐ Score: {story.score}</span>}
                         </div>
                         
-                        <!-- Format content with sections -->
+                        {/* Format content with sections */}
                         <div class="content-section">
                             {(() => {
                                 const content = story.content || '';
                                 const sections = content.split(/\n\n+/);
                                 return sections.map((section, idx) => {
                                     if (section.startsWith('•')) {
-                                        return `
+                                        return (
                                             <div class="content-section">
                                                 <ul style="list-style: none; padding-left: 0;">
-                                                    ${section.split('\n').map(line => 
-                                                        line.startsWith('•') ? `<li style="margin-bottom: 0.75rem; padding-left: 1.25rem; position: relative;">✓ ${line.replace('•', '').trim()}</li>` : ''
-                                                    ).join('')}
+                                                    {section.split('\n').map((line, lineIdx) => 
+                                                        line.startsWith('•') ? <li style="margin-bottom: 0.75rem; padding-left: 1.25rem; position: relative;">✓ {line.replace('•', '').trim()}</li> : null
+                                                    )}
                                                 </ul>
                                             </div>
-                                        `;
+                                        );
                                     } else if (section.includes(':')) {
-                                        const [title, ...rest] = section.split(':');
-                                        return `
+                                        const colonIndex = section.indexOf(':');
+                                        const title = section.substring(0, colonIndex).trim();
+                                        const rest = section.substring(colonIndex + 1).trim();
+                                        return (
                                             <div class="content-section">
-                                                <h2>${title.trim()}</h2>
-                                                <p>${rest.join(':').trim()}</p>
+                                                <h2>{title}</h2>
+                                                <p>{rest}</p>
                                             </div>
-                                        `;
+                                        );
                                     } else {
-                                        return `
+                                        return (
                                             <div class="content-section">
-                                                <p>${section}</p>
+                                                <p>{section}</p>
                                             </div>
-                                        `;
+                                        );
                                     }
-                                }).join('');
+                                })
                             })()}
                         </div>
                         
@@ -406,7 +407,7 @@ const previousStories = trendingData.slice(1, 6);
                     <div class="ad-box">
                         <div class="ad-label">Advertisement</div>
                         <div class="ad-placeholder">
-                            📢 Your Ad Here<br>
+                            📢 Your Ad Here<br />
                             <small>728x90 banner</small>
                         </div>
                     </div>
@@ -415,7 +416,7 @@ const previousStories = trendingData.slice(1, 6);
                     <div class="ad-box">
                         <div class="ad-label">Sponsored Content</div>
                         <div class="ad-placeholder">
-                            📢 Your Ad Here<br>
+                            📢 Your Ad Here<br />
                             <small>300x250 or responsive</small>
                         </div>
                     </div>
@@ -428,15 +429,15 @@ const previousStories = trendingData.slice(1, 6);
             <div class="sidebar-ad">
                 <div class="ad-label">Advertisement</div>
                 <div class="sidebar-ad-placeholder">
-                    📢 Your Ad<br>
+                    📢 Your Ad<br />
                     <small>300x250</small>
                 </div>
             </div>
             
             <div class="sidebar-widget">
                 <h3>📰 PREVIOUS STORIES</h3>
-                {previousStories.length > 0 ? previousStories.map(post => (
-                    <div class="story-list-item">
+                {previousStories.length > 0 ? previousStories.map((post, idx) => (
+                    <div class="story-list-item" key={idx}>
                         <a href="#">{post.title.length > 60 ? post.title.substring(0, 60) + '...' : post.title}</a>
                         <div class="item-date">{post.date}</div>
                     </div>
@@ -449,7 +450,7 @@ const previousStories = trendingData.slice(1, 6);
             <div class="sidebar-ad">
                 <div class="ad-label">Advertisement</div>
                 <div class="sidebar-ad-placeholder">
-                    📢 Your Ad<br>
+                    📢 Your Ad<br />
                     <small>300x600</small>
                 </div>
             </div>
@@ -464,7 +465,7 @@ const previousStories = trendingData.slice(1, 6);
             <div class="sidebar-ad">
                 <div class="ad-label">Advertisement</div>
                 <div class="sidebar-ad-placeholder">
-                    📢 Your Ad<br>
+                    📢 Your Ad<br />
                     <small>300x250</small>
                 </div>
             </div>
