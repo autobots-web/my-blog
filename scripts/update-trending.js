@@ -1,71 +1,73 @@
 // scripts/update-trending.js
 import fs from 'fs';
-import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-// Get current file's directory (for ES modules)
+// Get current file's directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Path to the trending.json file
+// Paths
+const draftPath = join(__dirname, '../content/draft.txt');
 const dataPath = join(__dirname, '../src/data/trending.json');
 
-// Function to fetch trending data
-async function fetchTrending() {
-    try {
-        // Using HackerNews API as our source (free, no API key needed)
-        console.log('📡 Fetching trending stories from HackerNews...');
-        
-        // Get top story IDs
-        const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const storyIds = await response.json();
-        
-        // Fetch top 5 stories
-        const topStories = await Promise.all(
-            storyIds.slice(0, 5).map(async (id) => {
-                const storyRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
-                return storyRes.json();
-            })
-        );
-        
-        // Format the data for our blog
-        const posts = topStories.map(story => ({
-            title: story.title,
-            url: story.url || `https://news.ycombinator.com/item?id=${story.id}`,
-            content: story.text || "No description available.",
-            score: story.score,
-            date: new Date().toISOString().split('T')[0]
-        }));
-        
-        console.log(`✅ Fetched ${posts.length} trending stories`);
-        return posts;
-        
-    } catch (error) {
-        console.error('❌ Error fetching trending data:', error.message);
-        // Return empty array if error occurs
-        return [];
+// Function to parse the draft file
+function parseDraft(content) {
+    const lines = content.trim().split('\n');
+    const post = {};
+    
+    for (let line of lines) {
+        if (line.startsWith('Title:')) {
+            post.title = line.replace('Title:', '').trim();
+        } else if (line.startsWith('Date:')) {
+            post.date = line.replace('Date:', '').trim();
+        } else if (line.startsWith('Content:')) {
+            post.content = line.replace('Content:', '').trim();
+        }
     }
+    
+    return post;
 }
 
 // Main function
 async function main() {
-    console.log('🚀 Starting daily content update...');
+    console.log('📝 Reading draft from content/draft.txt...');
     
-    // Fetch trending content
-    const trendingPosts = await fetchTrending();
-    
-    if (trendingPosts.length === 0) {
-        console.log('⚠️ No content fetched. Keeping existing data.');
+    // Check if draft exists
+    if (!fs.existsSync(draftPath)) {
+        console.log('❌ No draft found at content/draft.txt');
+        console.log('💡 Create one with format:');
+        console.log('   Title: Your Title');
+        console.log('   Date: 2026-03-26');
+        console.log('   Content: Your content here');
         process.exit(1);
     }
     
-    // Write to JSON file
-    fs.writeFileSync(dataPath, JSON.stringify(trendingPosts, null, 2));
-    console.log(`💾 Saved ${trendingPosts.length} posts to ${dataPath}`);
+    // Read draft file
+    const draftContent = fs.readFileSync(draftPath, 'utf-8');
+    const newPost = parseDraft(draftContent);
     
-    console.log('✅ Daily update complete!');
+    if (!newPost.title || !newPost.content) {
+        console.log('❌ Invalid draft format. Make sure you have Title: and Content: fields');
+        process.exit(1);
+    }
+    
+    // Read existing posts
+    let existingPosts = [];
+    if (fs.existsSync(dataPath)) {
+        existingPosts = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+    }
+    
+    // Add new post at the beginning
+    const updatedPosts = [newPost, ...existingPosts];
+    
+    // Save to JSON
+    fs.writeFileSync(dataPath, JSON.stringify(updatedPosts, null, 2));
+    console.log(`✅ Published: "${newPost.title}"`);
+    
+    // Clear the draft file
+    fs.writeFileSync(draftPath, '');
+    console.log('🗑️  Draft cleared');
 }
 
-// Run the script
 main();

@@ -9,7 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "update": "node scripts/update-trending.js"
+    "publish": "node scripts/update-trending.js"
   },
   "dependencies": {
     "astro": "^6.0.8",

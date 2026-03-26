@@ -1,5 +1,10 @@
 [
   {
+    "title": "My Blog Post Title",
+    "date": "2026-03-26",
+    "content": "This is my blog post content. Write whatever you want here."
+  },
+  {
     "title": "Running Tesla Model 3's computer on my desk using parts from crashed cars",
     "url": "https://bugs.xdavidhu.me/tesla/2026/03/23/running-tesla-model-3s-computer-on-my-desk-using-parts-from-crashed-cars/",
     "content": "No description available.",
