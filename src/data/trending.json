@@ -1,5 +1,10 @@
 [
   {
+    "title": "My Amazing Post",
+    "date": "2026-03-26",
+    "content": "This is the content of my amazing blog post. I can write multiple sentences here."
+  },
+  {
     "title": "My Blog Post Title",
     "date": "2026-03-26",
     "content": "This is my blog post content. Write whatever you want here."
