@@ -6,6 +6,27 @@ import trendingData from '../data/trending.json';
 const story = trendingData.length > 0 ? trendingData[0] : null;
 // Get previous stories for sidebar
 const previousStories = trendingData.slice(1, 6);
+
+// Function to split content into sections for ad placement
+function splitContentIntoParagraphs(content) {
+    if (!content) return [];
+    
+    // Split by double newlines first (paragraphs)
+    let paragraphs = content.split(/\n\n+/);
+    
+    // Also split by single newlines if they exist
+    let finalParagraphs = [];
+    for (let para of paragraphs) {
+        if (para.includes('\n')) {
+            finalParagraphs.push(...para.split('\n'));
+        } else {
+            finalParagraphs.push(para);
+        }
+    }
+    
+    // Filter out empty paragraphs
+    return finalParagraphs.filter(p => p.trim().length > 0);
+}
 ---
 
 <!DOCTYPE html>
@@ -16,7 +37,6 @@ const previousStories = trendingData.slice(1, 6);
     <meta name="description" content="Daily AI tech news and insights">
     <title>{story ? story.title : 'AI Tech Daily'} | AI Tech Daily</title>
     <style>
-        /* Import Google Font - MUST be at the very top */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
         * {
@@ -29,7 +49,7 @@ const previousStories = trendingData.slice(1, 6);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: #ffffff;
             color: #111827;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         
         /* Top Navigation */
@@ -42,10 +62,12 @@ const previousStories = trendingData.slice(1, 6);
             flex-wrap: wrap;
             gap: 1rem;
             border-bottom: 1px solid #1f2937;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .logo {
-            color: white;
             font-size: 1.4rem;
             font-weight: 800;
             letter-spacing: -0.5px;
@@ -120,53 +142,34 @@ const previousStories = trendingData.slice(1, 6);
             font-size: 0.85rem;
         }
         
-        /* Content Sections - Evenly Spaced */
-        .content-section {
-            margin: 2rem 0;
-        }
-        
-        .content-section h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: #1f2937;
-        }
-        
-        .content-section p {
-            margin-bottom: 1rem;
+        /* Content Paragraph Styling */
+        .content-paragraph {
+            margin-bottom: 1.5rem;
             font-size: 1.05rem;
-            line-height: 1.6;
+            line-height: 1.7;
             color: #374151;
         }
         
-        .content-section ul, .content-section ol {
+        .content-paragraph:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Headings within content */
+        .content-heading {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 1.5rem 0 1rem 0;
+            color: #1f2937;
+        }
+        
+        /* Bullet points and lists */
+        .content-list {
             margin: 1rem 0 1rem 1.5rem;
         }
         
-        .content-section li {
+        .content-list li {
             margin-bottom: 0.5rem;
             line-height: 1.6;
-        }
-        
-        /* Step-by-step styling */
-        .step-list {
-            list-style: none;
-            margin: 1.5rem 0;
-            padding: 0;
-        }
-        
-        .step-list li {
-            background: #f9fafb;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border-radius: 12px;
-            border-left: 4px solid #4f46e5;
-        }
-        
-        .step-list li strong {
-            color: #4f46e5;
-            display: block;
-            margin-bottom: 0.5rem;
         }
         
         /* Ad Boxes */
@@ -283,6 +286,24 @@ const previousStories = trendingData.slice(1, 6);
             border-top: 1px solid #e5e7eb;
         }
         
+        .newsletter {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+        
+        .newsletter h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .newsletter p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
         /* Responsive */
         @media (max-width: 900px) {
             .main-container {
@@ -300,23 +321,13 @@ const previousStories = trendingData.slice(1, 6);
             }
         }
         
-        /* Newsletter Signup */
-        .newsletter {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-            padding: 1.25rem;
-            border-radius: 16px;
+        /* Ad divider line */
+        .ad-divider {
             text-align: center;
-        }
-        
-        .newsletter h4 {
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .newsletter p {
-            font-size: 0.75rem;
-            opacity: 0.9;
+            margin: 1rem 0;
+            color: #d1d5db;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -339,87 +350,145 @@ const previousStories = trendingData.slice(1, 6);
                 </div>
             ) : (
                 <>
-                    <!-- Ad Box 1: Top of Article -->
-                    <div class="ad-box">
-                        <div class="ad-label">Sponsored</div>
-                        <div class="ad-placeholder">
-                            📢 Your Ad Here<br />
-                            <small>300x250 or responsive</small>
-                        </div>
+                    <span class="category-badge">🔥 TRENDING AI NEWS</span>
+                    <h1>{story.title}</h1>
+                    <div class="meta">
+                        <span>📅 {story.date}</span>
+                        {story.source && <span>📰 Source: {story.source}</span>}
+                        {story.score && <span>⭐ Score: {story.score}</span>}
                     </div>
                     
-                    <article>
-                        <span class="category-badge">🔥 TRENDING AI NEWS</span>
-                        <h1>{story.title}</h1>
-                        <div class="meta">
-                            <span>📅 {story.date}</span>
-                            {story.source && <span>📰 Source: {story.source}</span>}
-                            {story.score && <span>⭐ Score: {story.score}</span>}
-                        </div>
+                    {/* Process and display content with strategic ad placement */}
+                    {(() => {
+                        const content = story.content || '';
+                        const lines = content.split('\n');
+                        const paragraphs = [];
+                        let currentBlock = '';
+                        let inList = false;
+                        let listItems = [];
                         
-                        {/* Format content with sections */}
-                        <div class="content-section">
-                            {(() => {
-                                const content = story.content || '';
-                                const sections = content.split(/\n\n+/);
-                                return sections.map((section, idx) => {
-                                    if (section.startsWith('•')) {
-                                        return (
-                                            <div class="content-section">
-                                                <ul style="list-style: none; padding-left: 0;">
-                                                    {section.split('\n').map((line, lineIdx) => 
-                                                        line.startsWith('•') ? <li style="margin-bottom: 0.75rem; padding-left: 1.25rem; position: relative;">✓ {line.replace('•', '').trim()}</li> : null
-                                                    )}
-                                                </ul>
-                                            </div>
-                                        );
-                                    } else if (section.includes(':')) {
-                                        const colonIndex = section.indexOf(':');
-                                        const title = section.substring(0, colonIndex).trim();
-                                        const rest = section.substring(colonIndex + 1).trim();
-                                        return (
-                                            <div class="content-section">
-                                                <h2>{title}</h2>
-                                                <p>{rest}</p>
-                                            </div>
-                                        );
-                                    } else {
-                                        return (
-                                            <div class="content-section">
-                                                <p>{section}</p>
-                                            </div>
-                                        );
+                        // Parse content into display blocks
+                        for (let i = 0; i < lines.length; i++) {
+                            const line = lines[i].trim();
+                            
+                            if (line.startsWith('**') && line.endsWith('**')) {
+                                // This is a heading
+                                if (currentBlock) {
+                                    paragraphs.push({ type: 'paragraph', content: currentBlock });
+                                    currentBlock = '';
+                                }
+                                paragraphs.push({ type: 'heading', content: line.replace(/\*\*/g, '') });
+                            } 
+                            else if (line.startsWith('•') || line.match(/^\d+\./)) {
+                                // This is a list item
+                                if (!inList) {
+                                    if (currentBlock) {
+                                        paragraphs.push({ type: 'paragraph', content: currentBlock });
+                                        currentBlock = '';
                                     }
-                                })
-                            })()}
-                        </div>
+                                    inList = true;
+                                    listItems = [];
+                                }
+                                listItems.push(line);
+                            }
+                            else if (line === '' && inList) {
+                                // End of list
+                                paragraphs.push({ type: 'list', content: listItems });
+                                inList = false;
+                                listItems = [];
+                            }
+                            else if (line !== '') {
+                                if (inList) {
+                                    // End list when hitting non-list line
+                                    paragraphs.push({ type: 'list', content: listItems });
+                                    inList = false;
+                                    listItems = [];
+                                }
+                                currentBlock += (currentBlock ? ' ' : '') + line;
+                            }
+                        }
                         
-                        {story.url && (
-                            <div class="content-section">
-                                <a href={story.url} target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #4f46e5; color: white; padding: 0.75rem 1.5rem; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 1rem 0;">
-                                    🔗 Read Original Source →
-                                </a>
+                        if (currentBlock) {
+                            paragraphs.push({ type: 'paragraph', content: currentBlock });
+                        }
+                        if (inList && listItems.length > 0) {
+                            paragraphs.push({ type: 'list', content: listItems });
+                        }
+                        
+                        // Distribute ads strategically throughout content
+                        const adPositions = [1, 4, 7, 10]; // Insert ads after these paragraph indices
+                        const elements = [];
+                        let adCount = 1;
+                        
+                        for (let i = 0; i < paragraphs.length; i++) {
+                            const para = paragraphs[i];
+                            
+                            // Render the content block
+                            if (para.type === 'heading') {
+                                elements.push(<h2 class="content-heading">{para.content}</h2>);
+                            } 
+                            else if (para.type === 'paragraph') {
+                                elements.push(<p class="content-paragraph">{para.content}</p>);
+                            }
+                            else if (para.type === 'list') {
+                                const isNumbered = para.content[0]?.match(/^\d+\./);
+                                if (isNumbered) {
+                                    elements.push(
+                                        <ol class="content-list">
+                                            {para.content.map((item, idx) => (
+                                                <li key={idx}>{item.replace(/^\d+\.\s*/, '')}</li>
+                                            ))}
+                                        </ol>
+                                    );
+                                } else {
+                                    elements.push(
+                                        <ul class="content-list">
+                                            {para.content.map((item, idx) => (
+                                                <li key={idx}>{item.replace('•', '').trim()}</li>
+                                            ))}
+                                        </ul>
+                                    );
+                                }
+                            }
+                            
+                            // Insert ad after specific paragraphs (but not after last)
+                            if (adPositions.includes(i + 1) && i < paragraphs.length - 1) {
+                                elements.push(
+                                    <div key={`ad-${adCount}`} class="ad-box">
+                                        <div class="ad-label">Advertisement</div>
+                                        <div class="ad-placeholder">
+                                            📢 Your Ad Here<br />
+                                            <small>Responsive ad</small>
+                                        </div>
+                                        <div class="ad-divider">▼ Sponsored Content ▼</div>
+                                    </div>
+                                );
+                                adCount++;
+                            }
+                        }
+                        
+                        // Add final ad at the bottom
+                        elements.push(
+                            <div key="final-ad" class="ad-box">
+                                <div class="ad-label">Advertisement</div>
+                                <div class="ad-placeholder">
+                                    📢 Your Ad Here<br />
+                                    <small>728x90 banner</small>
+                                </div>
                             </div>
-                        )}
-                    </article>
+                        );
+                        
+                        return elements;
+                    })()}
                     
-                    <!-- Ad Box 2: Middle of Article -->
-                    <div class="ad-box">
-                        <div class="ad-label">Advertisement</div>
-                        <div class="ad-placeholder">
-                            📢 Your Ad Here<br />
-                            <small>728x90 banner</small>
+                    {/* Source link if available */}
+                    {story.url && (
+                        <div style={{ margin: "2rem 0", textAlign: "center" }}>
+                            <a href={story.url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "#4f46e5", color: "white", padding: "0.75rem 1.5rem", borderRadius: "40px", textDecoration: "none", fontWeight: "600" }}>
+                                🔗 Read Original Source →
+                            </a>
                         </div>
-                    </div>
-                    
-                    <!-- Ad Box 3: After Article -->
-                    <div class="ad-box">
-                        <div class="ad-label">Sponsored Content</div>
-                        <div class="ad-placeholder">
-                            📢 Your Ad Here<br />
-                            <small>300x250 or responsive</small>
-                        </div>
-                    </div>
+                    )}
                 </>
             )}
         </main>
@@ -473,7 +542,7 @@ const previousStories = trendingData.slice(1, 6);
     </div>
     
     <footer class="footer">
-        <p>🤖 AI Tech Daily • Daily AI and tech news • Updated every morning</p>
+        <p>🤖 AI Tech Daily • Daily AI and tech news • Updated daily</p>
         <p style="margin-top: 0.5rem;">© 2026 AI Tech Daily. All rights reserved.</p>
     </footer>
 </body>
