@@ -2,8 +2,8 @@
 // src/pages/index.astro
 import trendingData from '../data/trending.json';
 
-// Get only the latest/most recent post
-const latestPost = trendingData.length > 0 ? trendingData[0] : null;
+// Get only the latest story
+const story = trendingData.length > 0 ? trendingData[0] : null;
 ---
 
 <!DOCTYPE html>
@@ -11,7 +11,8 @@ const latestPost = trendingData.length > 0 ? trendingData[0] : null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Story</title>
+    <meta name="description" content="Daily stories and insights">
+    <title>{story ? story.title : 'Daily Story'} | Daily Story Blog</title>
     <style>
         * {
             margin: 0;
@@ -21,210 +22,364 @@ const latestPost = trendingData.length > 0 ? trendingData[0] : null;
         
         body {
             font-family: 'Georgia', 'Times New Roman', Times, serif;
-            background: #faf9f8;
+            background: #ffffff;
             color: #1a1a1a;
-            line-height: 1.6;
+            line-height: 1.5;
         }
         
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-        
-        /* Header - Clean & Simple */
-        .site-header {
-            text-align: center;
-            padding: 2rem 0 1rem 0;
-            border-bottom: 1px solid #eae6df;
-            margin-bottom: 3rem;
-        }
-        
-        .site-title {
-            font-size: 2rem;
-            font-weight: 400;
-            letter-spacing: -0.5px;
-            color: #2c3e50;
-        }
-        
-        .site-title a {
-            text-decoration: none;
-            color: #2c3e50;
-        }
-        
-        .site-description {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        .date-badge {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .date-badge span {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: #eae6df;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            color: #5e5a55;
-        }
-        
-        /* Story Content */
-        .story-title {
-            font-size: 2.8rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            color: #1a1a1a;
-            text-align: left;
-        }
-        
-        .story-meta {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 0.85rem;
-            color: #8e8e8e;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eae6df;
+        /* Top Navigation Bar */
+        .top-nav {
+            background: #000000;
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         
-        .story-content {
-            font-size: 1.2rem;
+        .logo {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .nav-links a {
+            color: #cccccc;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: white;
+        }
+        
+        /* Main Layout: 2 Columns */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 3rem;
+        }
+        
+        /* Article Content */
+        .article-content {
+            min-width: 0;
+        }
+        
+        /* Ad Box Styling */
+        .ad-box {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 2rem 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .ad-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 0.75rem;
+        }
+        
+        .ad-placeholder {
+            background: #e8e8e8;
+            padding: 2rem;
+            border-radius: 4px;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        /* Sidebar Ad Boxes */
+        .sidebar-ad {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-ad .ad-label {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-ad-placeholder {
+            background: #e8e8e8;
+            padding: 1.5rem;
+            border-radius: 4px;
+            color: #666;
+            font-size: 0.75rem;
+        }
+        
+        /* Article Header */
+        .article-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 1.5rem;
+        }
+        
+        .category-tag {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #0066cc;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+        
+        .byline {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .date {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        /* Article Body */
+        .article-body {
+            font-size: 1.1rem;
+            line-height: 1.7;
             color: #2c3e50;
         }
         
-        .story-content p {
+        .article-body p {
             margin-bottom: 1.5rem;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .sidebar h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #0066cc;
+        }
+        
+        .popular-post {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .popular-post a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        
+        .popular-post a:hover {
+            color: #0066cc;
+        }
+        
+        .popular-post .post-date {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 0.25rem;
         }
         
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
-            background: #fff;
+            padding: 4rem;
+            background: #fafafa;
             border-radius: 12px;
-            border: 1px solid #eae6df;
-        }
-        
-        .empty-state h2 {
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin-bottom: 1rem;
-            color: #2c3e50;
-        }
-        
-        .empty-state p {
-            color: #7f8c8d;
         }
         
         /* Footer */
-        .site-footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
+        .footer {
+            background: #f8f8f8;
+            margin-top: 3rem;
+            padding: 2rem;
             text-align: center;
-            font-size: 0.8rem;
-            color: #b0a8a0;
-            border-top: 1px solid #eae6df;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.8rem;
+            color: #666;
+            border-top: 1px solid #eaeaea;
         }
         
         /* Responsive */
-        @media (max-width: 600px) {
-            .container {
-                padding: 1rem;
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
             }
             
-            .story-title {
-                font-size: 2rem;
+            h1 {
+                font-size: 1.8rem;
             }
             
-            .story-content {
+            .article-body {
                 font-size: 1rem;
             }
             
-            .site-title {
-                font-size: 1.5rem;
-            }
-        }
-        
-        /* Simple animations */
-        .story-content {
-            animation: fadeIn 0.6s ease;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .top-nav {
+                padding: 0.8rem 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="site-header">
-            <h1 class="site-title">
-                <a href="/">Daily Story</a>
-            </h1>
-            <div class="site-description">One story, every day</div>
-        </header>
-        
-        <div class="date-badge">
-            <span>
-                {
-                    latestPost && latestPost.date 
-                        ? new Date(latestPost.date).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })
-                        : new Date().toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })
-                }
-            </span>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="/" class="logo">📰 DAILY STORY</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="#">Archive</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
         </div>
-        
-        {
-            !latestPost ? (
+    </nav>
+    
+    <div class="main-container">
+        <!-- Main Article Column -->
+        <main class="article-content">
+            {!story ? (
                 <div class="empty-state">
-                    <h2>✨ No story yet</h2>
+                    <h2>No story yet</h2>
                     <p>Check back tomorrow for today's story.</p>
                 </div>
             ) : (
-                <article class="story-content">
-                    <h1 class="story-title">{latestPost.title}</h1>
-                    <div class="story-meta">
-                        <span>📖 Today's story</span>
-                        <span>⭐ Featured</span>
+                <>
+                    <!-- Ad Box 1: Top of Article -->
+                    <div class="ad-box">
+                        <div class="ad-label">ADVERTISEMENT</div>
+                        <div class="ad-placeholder">
+                            Your Ad Code Here<br>
+                            <small>(300x250 or responsive)</small>
+                        </div>
                     </div>
-                    <div class="story-content">
-                        <p>{latestPost.content}</p>
+                    
+                    <article>
+                        <div class="article-header">
+                            <div class="category-tag">📖 TODAY'S STORY</div>
+                            <h1>{story.title}</h1>
+                            <div class="byline">By Daily Story Team</div>
+                            <div class="date">
+                                {story.date 
+                                    ? new Date(story.date).toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                      })
+                                    : new Date().toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                      })
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="article-body">
+                            <p>{story.content}</p>
+                        </div>
+                    </article>
+                    
+                    <!-- Ad Box 2: Middle of Article -->
+                    <div class="ad-box">
+                        <div class="ad-label">ADVERTISEMENT</div>
+                        <div class="ad-placeholder">
+                            Your Ad Code Here<br>
+                            <small>(300x250 or responsive)</small>
+                        </div>
                     </div>
-                </article>
-            )
-        }
+                    
+                    <!-- Ad Box 3: After Article -->
+                    <div class="ad-box">
+                        <div class="ad-label">ADVERTISEMENT</div>
+                        <div class="ad-placeholder">
+                            Your Ad Code Here<br>
+                            <small>(728x90 banner)</small>
+                        </div>
+                    </div>
+                </>
+            )}
+        </main>
         
-        <footer class="site-footer">
-            <p>A daily story • Updated every day</p>
-        </footer>
+        <!-- Sidebar Column with Ads -->
+        <aside class="sidebar">
+            <!-- Sidebar Ad 1 -->
+            <div class="sidebar-ad">
+                <div class="ad-label">ADVERTISEMENT</div>
+                <div class="sidebar-ad-placeholder">
+                    Your Ad Code Here<br>
+                    <small>(300x250)</small>
+                </div>
+            </div>
+            
+            <h3>Popular Stories</h3>
+            <div class="popular-post">
+                <a href="#">Previous story from yesterday</a>
+                <div class="post-date">March 25, 2026</div>
+            </div>
+            <div class="popular-post">
+                <a href="#">Story from March 24</a>
+                <div class="post-date">March 24, 2026</div>
+            </div>
+            <div class="popular-post">
+                <a href="#">Story from March 23</a>
+                <div class="post-date">March 23, 2026</div>
+            </div>
+            
+            <!-- Sidebar Ad 2 -->
+            <div class="sidebar-ad">
+                <div class="ad-label">ADVERTISEMENT</div>
+                <div class="sidebar-ad-placeholder">
+                    Your Ad Code Here<br>
+                    <small>(300x600)</small>
+                </div>
+            </div>
+            
+            <!-- Sidebar Ad 3 -->
+            <div class="sidebar-ad">
+                <div class="ad-label">ADVERTISEMENT</div>
+                <div class="sidebar-ad-placeholder">
+                    Your Ad Code Here<br>
+                    <small>(300x250)</small>
+                </div>
+            </div>
+        </aside>
     </div>
+    
+    <footer class="footer">
+        <p>© 2026 Daily Story Blog. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.7rem;">Powered by daily stories | Updated every day</p>
+    </footer>
 </body>
 </html>
