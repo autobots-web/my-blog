@@ -2,8 +2,10 @@
 // src/pages/index.astro
 import trendingData from '../data/trending.json';
 
-// Get only the latest story
+// Get today's story (first item)
 const story = trendingData.length > 0 ? trendingData[0] : null;
+// Get previous stories for sidebar
+const previousStories = trendingData.slice(1, 6);
 ---
 
 <!DOCTYPE html>
@@ -11,8 +13,8 @@ const story = trendingData.length > 0 ? trendingData[0] : null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Daily stories and insights">
-    <title>{story ? story.title : 'Daily Story'} | Daily Story Blog</title>
+    <meta name="description" content="Daily AI tech news and insights">
+    <title>{story ? story.title : 'AI Tech Daily'} | AI Tech Daily</title>
     <style>
         * {
             margin: 0;
@@ -21,41 +23,49 @@ const story = trendingData.length > 0 ? trendingData[0] : null;
         }
         
         body {
-            font-family: 'Georgia', 'Times New Roman', Times, serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: #ffffff;
-            color: #1a1a1a;
+            color: #111827;
             line-height: 1.5;
         }
         
-        /* Top Navigation Bar */
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        /* Top Navigation */
         .top-nav {
-            background: #000000;
-            padding: 0.8rem 2rem;
+            background: #0a0a0a;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+            border-bottom: 1px solid #1f2937;
         }
         
         .logo {
             color: white;
-            font-size: 1.3rem;
-            font-weight: bold;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
             text-decoration: none;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
         
         .nav-links {
             display: flex;
             gap: 1.5rem;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         .nav-links a {
-            color: #cccccc;
+            color: #9ca3af;
             text-decoration: none;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 500;
             transition: color 0.2s;
         }
         
@@ -63,174 +73,215 @@ const story = trendingData.length > 0 ? trendingData[0] : null;
             color: white;
         }
         
-        /* Main Layout: 2 Columns */
+        /* Main Layout */
         .main-container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 2rem;
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 1fr 320px;
             gap: 3rem;
         }
         
-        /* Article Content */
+        /* Article Styles */
         .article-content {
             min-width: 0;
         }
         
-        /* Ad Box Styling */
+        .category-badge {
+            display: inline-block;
+            background: #eef2ff;
+            color: #4f46e5;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: #111827;
+            letter-spacing: -0.02em;
+        }
+        
+        .meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+        
+        /* Content Sections - Evenly Spaced */
+        .content-section {
+            margin: 2rem 0;
+        }
+        
+        .content-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .content-section p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        .content-section ul, .content-section ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+        
+        .content-section li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        /* Step-by-step styling */
+        .step-list {
+            list-style: none;
+            margin: 1.5rem 0;
+            padding: 0;
+        }
+        
+        .step-list li {
+            background: #f9fafb;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid #4f46e5;
+            counter-increment: step-counter;
+        }
+        
+        .step-list li strong {
+            color: #4f46e5;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Ad Boxes */
         .ad-box {
-            background: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
             padding: 1.5rem;
             text-align: center;
             margin: 2rem 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            transition: box-shadow 0.2s;
+        }
+        
+        .ad-box:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
         .ad-label {
             font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #999;
+            letter-spacing: 1.5px;
+            color: #9ca3af;
             margin-bottom: 0.75rem;
         }
         
         .ad-placeholder {
-            background: #e8e8e8;
+            background: #f3f4f6;
             padding: 2rem;
-            border-radius: 4px;
-            color: #666;
-            font-size: 0.8rem;
-        }
-        
-        /* Sidebar Ad Boxes */
-        .sidebar-ad {
-            background: #f5f5f5;
-            border: 1px solid #e0e0e0;
             border-radius: 8px;
-            padding: 1.2rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .sidebar-ad .ad-label {
-            margin-bottom: 0.5rem;
-        }
-        
-        .sidebar-ad-placeholder {
-            background: #e8e8e8;
-            padding: 1.5rem;
-            border-radius: 4px;
-            color: #666;
-            font-size: 0.75rem;
-        }
-        
-        /* Article Header */
-        .article-header {
-            margin-bottom: 2rem;
-            border-bottom: 1px solid #eaeaea;
-            padding-bottom: 1.5rem;
-        }
-        
-        .category-tag {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #0066cc;
-            letter-spacing: 1px;
-            margin-bottom: 0.75rem;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-            color: #1a1a1a;
-        }
-        
-        .byline {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 1rem;
-        }
-        
-        .date {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #6b7280;
             font-size: 0.8rem;
-            color: #888;
-        }
-        
-        /* Article Body */
-        .article-body {
-            font-size: 1.1rem;
-            line-height: 1.7;
-            color: #2c3e50;
-        }
-        
-        .article-body p {
-            margin-bottom: 1.5rem;
+            font-weight: 500;
         }
         
         /* Sidebar */
         .sidebar {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
         
-        .sidebar h3 {
-            font-size: 1rem;
+        .sidebar-widget {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .sidebar-widget h3 {
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #333;
+            color: #4f46e5;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid #0066cc;
+            border-bottom: 2px solid #e5e7eb;
         }
         
-        .popular-post {
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+        .sidebar-ad {
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
         
-        .popular-post a {
+        .sidebar-ad-placeholder {
+            background: #f3f4f6;
+            padding: 2rem;
+            border-radius: 8px;
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+        
+        .story-list-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .story-list-item a {
             text-decoration: none;
-            color: #1a1a1a;
+            color: #1f2937;
             font-weight: 500;
+            font-size: 0.9rem;
             line-height: 1.4;
+            display: block;
+            margin-bottom: 0.25rem;
         }
         
-        .popular-post a:hover {
-            color: #0066cc;
+        .story-list-item a:hover {
+            color: #4f46e5;
         }
         
-        .popular-post .post-date {
+        .story-list-item .item-date {
             font-size: 0.7rem;
-            color: #888;
-            margin-top: 0.25rem;
+            color: #9ca3af;
         }
         
         /* Empty State */
         .empty-state {
             text-align: center;
             padding: 4rem;
-            background: #fafafa;
-            border-radius: 12px;
+            background: #f9fafb;
+            border-radius: 24px;
         }
         
         /* Footer */
         .footer {
-            background: #f8f8f8;
-            margin-top: 3rem;
+            background: #f9fafb;
+            margin-top: 4rem;
             padding: 2rem;
             text-align: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 0.8rem;
-            color: #666;
-            border-top: 1px solid #eaeaea;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
         }
         
         /* Responsive */
@@ -238,148 +289,191 @@ const story = trendingData.length > 0 ? trendingData[0] : null;
             .main-container {
                 grid-template-columns: 1fr;
                 gap: 2rem;
+                padding: 1rem;
             }
             
             h1 {
                 font-size: 1.8rem;
             }
             
-            .article-body {
-                font-size: 1rem;
-            }
-            
             .top-nav {
                 padding: 0.8rem 1rem;
             }
         }
+        
+        /* Newsletter Signup */
+        .newsletter {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+        
+        .newsletter h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .newsletter p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
     <nav class="top-nav">
-        <a href="/" class="logo">📰 DAILY STORY</a>
+        <a href="/" class="logo">🤖 AI TECH DAILY</a>
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="#">Archive</a>
             <a href="#">About</a>
-            <a href="#">Contact</a>
         </div>
     </nav>
     
     <div class="main-container">
-        <!-- Main Article Column -->
         <main class="article-content">
             {!story ? (
                 <div class="empty-state">
-                    <h2>No story yet</h2>
-                    <p>Check back tomorrow for today's story.</p>
+                    <h2>📡 No story yet</h2>
+                    <p>Check back tomorrow for the latest AI tech news.</p>
                 </div>
             ) : (
                 <>
                     <!-- Ad Box 1: Top of Article -->
                     <div class="ad-box">
-                        <div class="ad-label">ADVERTISEMENT</div>
+                        <div class="ad-label">Sponsored</div>
                         <div class="ad-placeholder">
-                            Your Ad Code Here<br>
-                            <small>(300x250 or responsive)</small>
+                            📢 Your Ad Here<br>
+                            <small>300x250 or responsive</small>
                         </div>
                     </div>
                     
                     <article>
-                        <div class="article-header">
-                            <div class="category-tag">📖 TODAY'S STORY</div>
-                            <h1>{story.title}</h1>
-                            <div class="byline">By Daily Story Team</div>
-                            <div class="date">
-                                {story.date 
-                                    ? new Date(story.date).toLocaleDateString('en-US', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                      })
-                                    : new Date().toLocaleDateString('en-US', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                      })
-                                }
-                            </div>
+                        <span class="category-badge">🔥 TRENDING AI NEWS</span>
+                        <h1>{story.title}</h1>
+                        <div class="meta">
+                            <span>📅 {story.date}</span>
+                            {story.source && <span>📰 Source: {story.source}</span>}
+                            {story.score && <span>⭐ Score: {story.score}</span>}
                         </div>
                         
-                        <div class="article-body">
-                            <p>{story.content}</p>
+                        <!-- Format content with sections -->
+                        <div class="content-section">
+                            {(() => {
+                                const content = story.content || '';
+                                const sections = content.split(/\n\n+/);
+                                return sections.map((section, idx) => {
+                                    if (section.startsWith('•')) {
+                                        return `
+                                            <div class="content-section">
+                                                <ul style="list-style: none; padding-left: 0;">
+                                                    ${section.split('\n').map(line => 
+                                                        line.startsWith('•') ? `<li style="margin-bottom: 0.75rem; padding-left: 1.25rem; position: relative;">✓ ${line.replace('•', '').trim()}</li>` : ''
+                                                    ).join('')}
+                                                </ul>
+                                            </div>
+                                        `;
+                                    } else if (section.includes(':')) {
+                                        const [title, ...rest] = section.split(':');
+                                        return `
+                                            <div class="content-section">
+                                                <h2>${title.trim()}</h2>
+                                                <p>${rest.join(':').trim()}</p>
+                                            </div>
+                                        `;
+                                    } else {
+                                        return `
+                                            <div class="content-section">
+                                                <p>${section}</p>
+                                            </div>
+                                        `;
+                                    }
+                                }).join('');
+                            })()}
                         </div>
+                        
+                        {story.url && (
+                            <div class="content-section">
+                                <a href={story.url} target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #4f46e5; color: white; padding: 0.75rem 1.5rem; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 1rem 0;">
+                                    🔗 Read Original Source →
+                                </a>
+                            </div>
+                        )}
                     </article>
                     
                     <!-- Ad Box 2: Middle of Article -->
                     <div class="ad-box">
-                        <div class="ad-label">ADVERTISEMENT</div>
+                        <div class="ad-label">Advertisement</div>
                         <div class="ad-placeholder">
-                            Your Ad Code Here<br>
-                            <small>(300x250 or responsive)</small>
+                            📢 Your Ad Here<br>
+                            <small>728x90 banner</small>
                         </div>
                     </div>
                     
                     <!-- Ad Box 3: After Article -->
                     <div class="ad-box">
-                        <div class="ad-label">ADVERTISEMENT</div>
+                        <div class="ad-label">Sponsored Content</div>
                         <div class="ad-placeholder">
-                            Your Ad Code Here<br>
-                            <small>(728x90 banner)</small>
+                            📢 Your Ad Here<br>
+                            <small>300x250 or responsive</small>
                         </div>
                     </div>
                 </>
             )}
         </main>
         
-        <!-- Sidebar Column with Ads -->
         <aside class="sidebar">
             <!-- Sidebar Ad 1 -->
             <div class="sidebar-ad">
-                <div class="ad-label">ADVERTISEMENT</div>
+                <div class="ad-label">Advertisement</div>
                 <div class="sidebar-ad-placeholder">
-                    Your Ad Code Here<br>
-                    <small>(300x250)</small>
+                    📢 Your Ad<br>
+                    <small>300x250</small>
                 </div>
             </div>
             
-            <h3>Popular Stories</h3>
-            <div class="popular-post">
-                <a href="#">Previous story from yesterday</a>
-                <div class="post-date">March 25, 2026</div>
-            </div>
-            <div class="popular-post">
-                <a href="#">Story from March 24</a>
-                <div class="post-date">March 24, 2026</div>
-            </div>
-            <div class="popular-post">
-                <a href="#">Story from March 23</a>
-                <div class="post-date">March 23, 2026</div>
+            <div class="sidebar-widget">
+                <h3>📰 PREVIOUS STORIES</h3>
+                {previousStories.length > 0 ? previousStories.map(post => (
+                    <div class="story-list-item">
+                        <a href="#">{post.title.length > 60 ? post.title.substring(0, 60) + '...' : post.title}</a>
+                        <div class="item-date">{post.date}</div>
+                    </div>
+                )) : (
+                    <p style="color: #9ca3af; font-size: 0.8rem;">No previous stories yet.</p>
+                )}
             </div>
             
             <!-- Sidebar Ad 2 -->
             <div class="sidebar-ad">
-                <div class="ad-label">ADVERTISEMENT</div>
+                <div class="ad-label">Advertisement</div>
                 <div class="sidebar-ad-placeholder">
-                    Your Ad Code Here<br>
-                    <small>(300x600)</small>
+                    📢 Your Ad<br>
+                    <small>300x600</small>
                 </div>
+            </div>
+            
+            <div class="newsletter">
+                <h4>📧 Daily Newsletter</h4>
+                <p>Get AI news delivered to your inbox</p>
+                <div style="margin-top: 0.75rem; font-size: 0.7rem; opacity: 0.8;">Coming soon</div>
             </div>
             
             <!-- Sidebar Ad 3 -->
             <div class="sidebar-ad">
-                <div class="ad-label">ADVERTISEMENT</div>
+                <div class="ad-label">Advertisement</div>
                 <div class="sidebar-ad-placeholder">
-                    Your Ad Code Here<br>
-                    <small>(300x250)</small>
+                    📢 Your Ad<br>
+                    <small>300x250</small>
                 </div>
             </div>
         </aside>
     </div>
     
     <footer class="footer">
-        <p>© 2026 Daily Story Blog. All rights reserved.</p>
-        <p style="margin-top: 0.5rem; font-size: 0.7rem;">Powered by daily stories | Updated every day</p>
+        <p>🤖 AI Tech Daily • Daily AI and tech news • Updated every morning</p>
+        <p style="margin-top: 0.5rem;">© 2026 AI Tech Daily. All rights reserved.</p>
     </footer>
 </body>
 </html>
