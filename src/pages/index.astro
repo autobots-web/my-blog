@@ -4,29 +4,88 @@ import trendingData from '../data/trending.json';
 
 // Get today's story (first item)
 const story = trendingData.length > 0 ? trendingData[0] : null;
-// Get previous stories for sidebar
 const previousStories = trendingData.slice(1, 6);
 
-// Function to split content into sections for ad placement
-function splitContentIntoParagraphs(content) {
+// Helper to parse content into structured blocks
+function parseContent(content) {
     if (!content) return [];
     
-    // Split by double newlines first (paragraphs)
-    let paragraphs = content.split(/\n\n+/);
+    const lines = content.split('\n');
+    const blocks = [];
+    let currentBlock = { type: null, content: [] };
+    let inList = false;
+    let listType = null;
     
-    // Also split by single newlines if they exist
-    let finalParagraphs = [];
-    for (let para of paragraphs) {
-        if (para.includes('\n')) {
-            finalParagraphs.push(...para.split('\n'));
+    for (let line of lines) {
+        const trimmed = line.trim();
+        
+        if (trimmed === '') {
+            if (currentBlock.content.length) {
+                blocks.push({ ...currentBlock });
+                currentBlock = { type: null, content: [] };
+                inList = false;
+                listType = null;
+            }
+            continue;
+        }
+        
+        // Headings
+        if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+            if (currentBlock.content.length) {
+                blocks.push({ ...currentBlock });
+            }
+            blocks.push({ type: 'heading', content: trimmed.slice(2, -2) });
+            currentBlock = { type: null, content: [] };
+            continue;
+        }
+        
+        // Bullet points
+        if (trimmed.startsWith('•')) {
+            if (!inList || listType !== 'bullet') {
+                if (currentBlock.content.length) blocks.push({ ...currentBlock });
+                inList = true;
+                listType = 'bullet';
+                currentBlock = { type: 'list', content: [], listType: 'bullet' };
+            }
+            currentBlock.content.push(trimmed.slice(1).trim());
+            continue;
+        }
+        
+        // Numbered list
+        if (trimmed.match(/^\d+\./)) {
+            if (!inList || listType !== 'numbered') {
+                if (currentBlock.content.length) blocks.push({ ...currentBlock });
+                inList = true;
+                listType = 'numbered';
+                currentBlock = { type: 'list', content: [], listType: 'numbered' };
+            }
+            currentBlock.content.push(trimmed.replace(/^\d+\.\s*/, ''));
+            continue;
+        }
+        
+        // Regular paragraph
+        if (!inList) {
+            if (currentBlock.type !== 'paragraph') {
+                if (currentBlock.content.length) blocks.push({ ...currentBlock });
+                currentBlock = { type: 'paragraph', content: [] };
+            }
+            currentBlock.content.push(trimmed);
         } else {
-            finalParagraphs.push(para);
+            // If we hit a non-list item while in a list, close the list
+            if (currentBlock.content.length) blocks.push({ ...currentBlock });
+            inList = false;
+            currentBlock = { type: 'paragraph', content: [trimmed] };
         }
     }
     
-    // Filter out empty paragraphs
-    return finalParagraphs.filter(p => p.trim().length > 0);
+    if (currentBlock.content.length) {
+        blocks.push({ ...currentBlock });
+    }
+    
+    return blocks;
 }
+
+const contentBlocks = story ? parseContent(story.content) : [];
 ---
 
 <!DOCTYPE html>
@@ -46,9 +105,9 @@ function splitContentIntoParagraphs(content) {
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #ffffff;
-            color: #111827;
+            color: #1a1a2e;
             line-height: 1.6;
         }
         
@@ -70,7 +129,6 @@ function splitContentIntoParagraphs(content) {
         .logo {
             font-size: 1.4rem;
             font-weight: 800;
-            letter-spacing: -0.5px;
             text-decoration: none;
             background: linear-gradient(135deg, #60a5fa, #a78bfa);
             -webkit-background-clip: text;
@@ -106,10 +164,6 @@ function splitContentIntoParagraphs(content) {
         }
         
         /* Article Styles */
-        .article-content {
-            min-width: 0;
-        }
-        
         .category-badge {
             display: inline-block;
             background: #eef2ff;
@@ -128,8 +182,8 @@ function splitContentIntoParagraphs(content) {
             font-weight: 800;
             line-height: 1.2;
             margin-bottom: 1rem;
-            color: #111827;
             letter-spacing: -0.02em;
+            color: #0f172a;
         }
         
         .meta {
@@ -142,55 +196,72 @@ function splitContentIntoParagraphs(content) {
             font-size: 0.85rem;
         }
         
-        /* Content Paragraph Styling */
+        /* Content Blocks */
         .content-paragraph {
             margin-bottom: 1.5rem;
             font-size: 1.05rem;
             line-height: 1.7;
-            color: #374151;
+            color: #334155;
         }
         
-        .content-paragraph:last-child {
-            margin-bottom: 0;
-        }
-        
-        /* Headings within content */
         .content-heading {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin: 1.5rem 0 1rem 0;
-            color: #1f2937;
+            margin: 2rem 0 1rem 0;
+            color: #0f172a;
+            border-left: 4px solid #4f46e5;
+            padding-left: 1rem;
         }
         
-        /* Bullet points and lists */
         .content-list {
-            margin: 1rem 0 1rem 1.5rem;
+            margin: 1rem 0 1.5rem 2rem;
         }
         
         .content-list li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             line-height: 1.6;
+            color: #334155;
+        }
+        
+        /* Key Takeaways special styling */
+        .key-takeaways {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .key-takeaways h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+        }
+        
+        .key-takeaways ol, .key-takeaways ul {
+            margin-left: 1.5rem;
+        }
+        
+        .key-takeaways li {
+            margin-bottom: 0.75rem;
         }
         
         /* Ad Boxes */
         .ad-box {
             background: #fafafa;
             border: 1px solid #e5e7eb;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 1.5rem;
             text-align: center;
             margin: 2rem 0;
             transition: box-shadow 0.2s;
         }
         
-        .ad-box:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        
         .ad-label {
             font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             color: #9ca3af;
             margin-bottom: 0.75rem;
         }
@@ -198,17 +269,13 @@ function splitContentIntoParagraphs(content) {
         .ad-placeholder {
             background: #f3f4f6;
             padding: 2rem;
-            border-radius: 8px;
+            border-radius: 12px;
             color: #6b7280;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
         
         /* Sidebar */
-        .sidebar {
-            font-family: 'Inter', sans-serif;
-        }
-        
         .sidebar-widget {
             background: #f9fafb;
             border-radius: 16px;
@@ -253,9 +320,7 @@ function splitContentIntoParagraphs(content) {
             color: #1f2937;
             font-weight: 500;
             font-size: 0.9rem;
-            line-height: 1.4;
             display: block;
-            margin-bottom: 0.25rem;
         }
         
         .story-list-item a:hover {
@@ -265,17 +330,29 @@ function splitContentIntoParagraphs(content) {
         .story-list-item .item-date {
             font-size: 0.7rem;
             color: #9ca3af;
+            margin-top: 0.25rem;
         }
         
-        /* Empty State */
-        .empty-state {
+        .source-link {
+            margin: 2rem 0;
             text-align: center;
-            padding: 4rem;
-            background: #f9fafb;
-            border-radius: 24px;
         }
         
-        /* Footer */
+        .source-link a {
+            display: inline-block;
+            background: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .source-link a:hover {
+            background: #4338ca;
+        }
+        
         .footer {
             background: #f9fafb;
             margin-top: 4rem;
@@ -299,35 +376,18 @@ function splitContentIntoParagraphs(content) {
             margin-bottom: 0.5rem;
         }
         
-        .newsletter p {
-            font-size: 0.75rem;
-            opacity: 0.9;
-        }
-        
-        /* Responsive */
         @media (max-width: 900px) {
             .main-container {
                 grid-template-columns: 1fr;
                 gap: 2rem;
                 padding: 1rem;
             }
-            
             h1 {
                 font-size: 1.8rem;
             }
-            
             .top-nav {
                 padding: 0.8rem 1rem;
             }
-        }
-        
-        /* Ad divider line */
-        .ad-divider {
-            text-align: center;
-            margin: 1rem 0;
-            color: #d1d5db;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -350,141 +410,78 @@ function splitContentIntoParagraphs(content) {
                 </div>
             ) : (
                 <>
-                    <span class="category-badge">🔥 TRENDING AI NEWS</span>
+                    <span class="category-badge">🔥 EXCLUSIVE ANALYSIS</span>
                     <h1>{story.title}</h1>
                     <div class="meta">
                         <span>📅 {story.date}</span>
                         {story.source && <span>📰 Source: {story.source}</span>}
-                        {story.score && <span>⭐ Score: {story.score}</span>}
                     </div>
                     
-                    {/* Process and display content with strategic ad placement */}
+                    {/* AD BOX 1 - TOP OF ARTICLE */}
+                    <div class="ad-box">
+                        <div class="ad-label">Advertisement</div>
+                        <div class="ad-placeholder">📢 Your Ad Here<br /><small>Leaderboard (728x90)</small></div>
+                    </div>
+                    
+                    {/* RENDER CONTENT WITH STRATEGIC AD PLACEMENT */}
                     {(() => {
-                        const content = story.content || '';
-                        const lines = content.split('\n');
-                        const paragraphs = [];
-                        let currentBlock = '';
-                        let inList = false;
-                        let listItems = [];
-                        
-                        // Parse content into display blocks
-                        for (let i = 0; i < lines.length; i++) {
-                            const line = lines[i].trim();
-                            
-                            if (line.startsWith('**') && line.endsWith('**')) {
-                                // This is a heading
-                                if (currentBlock) {
-                                    paragraphs.push({ type: 'paragraph', content: currentBlock });
-                                    currentBlock = '';
-                                }
-                                paragraphs.push({ type: 'heading', content: line.replace(/\*\*/g, '') });
-                            } 
-                            else if (line.startsWith('•') || line.match(/^\d+\./)) {
-                                // This is a list item
-                                if (!inList) {
-                                    if (currentBlock) {
-                                        paragraphs.push({ type: 'paragraph', content: currentBlock });
-                                        currentBlock = '';
-                                    }
-                                    inList = true;
-                                    listItems = [];
-                                }
-                                listItems.push(line);
-                            }
-                            else if (line === '' && inList) {
-                                // End of list
-                                paragraphs.push({ type: 'list', content: listItems });
-                                inList = false;
-                                listItems = [];
-                            }
-                            else if (line !== '') {
-                                if (inList) {
-                                    // End list when hitting non-list line
-                                    paragraphs.push({ type: 'list', content: listItems });
-                                    inList = false;
-                                    listItems = [];
-                                }
-                                currentBlock += (currentBlock ? ' ' : '') + line;
-                            }
-                        }
-                        
-                        if (currentBlock) {
-                            paragraphs.push({ type: 'paragraph', content: currentBlock });
-                        }
-                        if (inList && listItems.length > 0) {
-                            paragraphs.push({ type: 'list', content: listItems });
-                        }
-                        
-                        // Distribute ads strategically throughout content
-                        const adPositions = [1, 4, 7, 10]; // Insert ads after these paragraph indices
                         const elements = [];
-                        let adCount = 1;
+                        let blockCount = 0;
+                        let adPositions = [2, 5, 8, 12]; // Insert ads after these block counts
+                        let adIndex = 2;
                         
-                        for (let i = 0; i < paragraphs.length; i++) {
-                            const para = paragraphs[i];
+                        for (let i = 0; i < contentBlocks.length; i++) {
+                            const block = contentBlocks[i];
                             
-                            // Render the content block
-                            if (para.type === 'heading') {
-                                elements.push(<h2 class="content-heading">{para.content}</h2>);
+                            if (block.type === 'heading') {
+                                elements.push(<h2 class="content-heading">{block.content}</h2>);
+                                blockCount++;
                             } 
-                            else if (para.type === 'paragraph') {
-                                elements.push(<p class="content-paragraph">{para.content}</p>);
+                            else if (block.type === 'paragraph') {
+                                elements.push(<p class="content-paragraph">{block.content.join(' ')}</p>);
+                                blockCount++;
                             }
-                            else if (para.type === 'list') {
-                                const isNumbered = para.content[0]?.match(/^\d+\./);
-                                if (isNumbered) {
+                            else if (block.type === 'list') {
+                                if (block.listType === 'numbered') {
                                     elements.push(
                                         <ol class="content-list">
-                                            {para.content.map((item, idx) => (
-                                                <li key={idx}>{item.replace(/^\d+\.\s*/, '')}</li>
-                                            ))}
+                                            {block.content.map((item, idx) => <li key={idx}>{item}</li>)}
                                         </ol>
                                     );
                                 } else {
                                     elements.push(
                                         <ul class="content-list">
-                                            {para.content.map((item, idx) => (
-                                                <li key={idx}>{item.replace('•', '').trim()}</li>
-                                            ))}
+                                            {block.content.map((item, idx) => <li key={idx}>{item}</li>)}
                                         </ul>
                                     );
                                 }
+                                blockCount++;
                             }
                             
-                            // Insert ad after specific paragraphs (but not after last)
-                            if (adPositions.includes(i + 1) && i < paragraphs.length - 1) {
+                            // Insert ad after certain blocks (but not too many)
+                            if (adPositions.includes(blockCount) && i < contentBlocks.length - 1) {
                                 elements.push(
-                                    <div key={`ad-${adCount}`} class="ad-box">
+                                    <div key={`ad-${adIndex}`} class="ad-box">
                                         <div class="ad-label">Advertisement</div>
-                                        <div class="ad-placeholder">
-                                            📢 Your Ad Here<br />
-                                            <small>Responsive ad</small>
-                                        </div>
-                                        <div class="ad-divider">▼ Sponsored Content ▼</div>
+                                        <div class="ad-placeholder">📢 Your Ad Here<br /><small>Responsive Display Ad</small></div>
                                     </div>
                                 );
-                                adCount++;
+                                adIndex++;
                             }
                         }
-                        
-                        // Add final ad at the bottom
-                        elements.push(
-                            <div key="final-ad" class="ad-box">
-                                <div class="ad-label">Advertisement</div>
-                                <div class="ad-placeholder">
-                                    📢 Your Ad Here<br />
-                                    <small>728x90 banner</small>
-                                </div>
-                            </div>
-                        );
                         
                         return elements;
                     })()}
                     
-                    {/* Source link if available */}
+                    {/* AD BOX - BOTTOM OF ARTICLE */}
+                    <div class="ad-box">
+                        <div class="ad-label">Advertisement</div>
+                        <div class="ad-placeholder">📢 Your Ad Here<br /><small>Bottom Banner (728x90)</small></div>
+                    </div>
+                    
                     {story.url && (
-                        <div style={{ margin: "2rem 0", textAlign: "center" }}>
-                            <a href={story.url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "#4f46e5", color: "white", padding: "0.75rem 1.5rem", borderRadius: "40px", textDecoration: "none", fontWeight: "600" }}>
+                        <div class="source-link">
+                            <a href={story.url} target="_blank" rel="noopener noreferrer">
                                 🔗 Read Original Source →
                             </a>
                         </div>
@@ -494,13 +491,9 @@ function splitContentIntoParagraphs(content) {
         </main>
         
         <aside class="sidebar">
-            <!-- Sidebar Ad 1 -->
             <div class="sidebar-ad">
                 <div class="ad-label">Advertisement</div>
-                <div class="sidebar-ad-placeholder">
-                    📢 Your Ad<br />
-                    <small>300x250</small>
-                </div>
+                <div class="sidebar-ad-placeholder">📢 Your Ad<br /><small>300x250</small></div>
             </div>
             
             <div class="sidebar-widget">
@@ -511,32 +504,24 @@ function splitContentIntoParagraphs(content) {
                         <div class="item-date">{post.date}</div>
                     </div>
                 )) : (
-                    <p style="color: #9ca3af; font-size: 0.8rem;">No previous stories yet.</p>
+                    <p style="color: #9ca3af;">No previous stories yet.</p>
                 )}
             </div>
             
-            <!-- Sidebar Ad 2 -->
             <div class="sidebar-ad">
                 <div class="ad-label">Advertisement</div>
-                <div class="sidebar-ad-placeholder">
-                    📢 Your Ad<br />
-                    <small>300x600</small>
-                </div>
+                <div class="sidebar-ad-placeholder">📢 Your Ad<br /><small>300x600</small></div>
             </div>
             
             <div class="newsletter">
                 <h4>📧 Daily Newsletter</h4>
                 <p>Get AI news delivered to your inbox</p>
-                <div style="margin-top: 0.75rem; font-size: 0.7rem; opacity: 0.8;">Coming soon</div>
+                <div style="margin-top: 0.75rem; font-size: 0.7rem;">Coming soon</div>
             </div>
             
-            <!-- Sidebar Ad 3 -->
             <div class="sidebar-ad">
                 <div class="ad-label">Advertisement</div>
-                <div class="sidebar-ad-placeholder">
-                    📢 Your Ad<br />
-                    <small>300x250</small>
-                </div>
+                <div class="sidebar-ad-placeholder">📢 Your Ad<br /><small>300x250</small></div>
             </div>
         </aside>
     </div>
